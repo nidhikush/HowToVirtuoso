@@ -1,0 +1,54 @@
+1. Download and extract Virtuoso
+2. cd into your extracted virtuoso directory
+3. sudo aptitude install libxml2-dev libssl-dev autoconf libgraphviz-dev libmagickcore-dev libmagickwand-dev dnsutils gawk bison flex gperf 
+4. export CFLAGS="-O2 -m64"
+5. ./configure --with-layout=debian (change b/w root and nidhi user)
+6. make -j5 (do build essential)
+7. sudo make install
+8. edit /var/lib/virtuoso/db/virtuoso.ini
+	MaxCheckpointRemap  = 0.375 * NumberOfBuffers 
+
+System RAM 	NumberOfBuffers 	MaxDirtyBuffers
+2 GB 	            170000 	         130000
+4 GB 	              340000 	          250000
+8 GB 	               680000 	          500000
+16 GB 	               1360000   	1000000
+32 GB 	                2720000 	2000000
+48 GB 	                4000000 	3000000
+64 GB 	                  5450000 	4000000 
+
+------------------------------------------------------------------
+
+To load data
+1. Make the dirYouWantToCopyTo and Go to data dir type
+	cp *.* dirYouWantToCopyTo
+
+[root@nidhi-HCL-Desktop:/usr/local/data# cp /home/nidhi/Desktop/linkedmdb_links.nt.bz2 /usr/local/data/linksmdbDB #cp /home/nidhi/Desktop/linkedmdb_links.nt.bz2 /usr/local/data/linksmdbDB]
+[root@nidhi-HCL-Desktop:/usr/local/data/linksmdbDB# for i in *.bz2 ; do bzcat $i | gzip > ${i%.bz2}.gz && rm $i ; done &]
+2. for i in *.bz2 ; do bzcat $i | gzip > ${i%.bz2}.gz && rm $i ; done &
+3. type sudo apt-get install screen
+3. (a) update virtuoso.ini by adding dir path (/usr/local/data/dbpedia) to dirallowed field
+4. screen isql
+	a) ld_dir_all('/usr/local/data/3.9/en', '*.*', 'http://dbpedia.org');
+           a1)ld_dir_all('/usr/local/data/dbpedia/3.9', '*.*', 'http://dbpedia.org');
+           a2)ld_dir_all('/usr/local/data/linkedMDB','*.*', 'http://linkedMDB.org');
+           a3)ld_dir_all('/usr/local/data/linksmdbDB','*.*', 'http://linksmdbDB.org');
+	b) To see dirs that are to be loaded, 	SELECT * FROM DB.DBA.LOAD_LIST;
+	c) Start loading, 	rdf_loader_run();
+	d)	checkpoint;
+		commit WORK;
+		checkpoint;
+		EXIT;
+e) how many graphs in your local server(localhost:8890/sparql)
+SELECT ?g COUNT(*) { GRAPH ?g {?s ?p ?o.} } GROUP BY ?g ORDER BY DESC 2
+----------------------------------------------------------------------
+In my system
+
+1. Virtuoso path
+/var/lib
+2. Dbpedia Path
+/usr/local/data/dbpedia/3.9
+3. Virtuoso.ini file path
+/var/lib/virtuoso/db
+4. virtuoso-opensource-7.0.0 Folder
+/home/nidhi
